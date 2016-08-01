@@ -16,7 +16,7 @@ const commonMonsterTypes=[
 			{type:"bigmonster",name:"orc",HP:12,damage:4,value:5,move:1,loc:0},
 			{type:"bigmonster",name:"troll",HP:18,damage:6,value:7,move:1,loc:0}];
 const rareMonsterTypes=[
-			{type:"bigmonster",name:"golem",HP:30,damage:2,value:5,move:.5,loc:0},
+			{type:"bigmonster",name:"golem",HP:30,damage:2,value:5,move:0.5,loc:0},
 			{type:"monster",name:"leprechaun",HP:10,damage:1,value:7,move:2,loc:0},
 			{type:"monster",name:"floating eye",HP:3,damage:1,value:0,move:0,loc:0}]; 
 const commonTreasureTypes=[
@@ -49,20 +49,19 @@ var boardThree=[];
 // This group creates a random dungeon map for the first two levels with an empty object layer
 function generateDungeon(){
 	board=[];
-	for (var i=0;i<(height*width);i++){
+	for (let i=0;i<(height*width);i++){
 		if((i<width+1) ||	(i>width*(height-1)-1) ||
 			 (i%width==0) || (i+1)%width==0) board.push("boundary");
 		else board.push("wall");
 		gameData.objectMap.push("");
 	}
 	createRoom(Math.floor(width*height/2.67),5,5);
-	for (var i=0;i<width*2;i++) tryToCreateRoom();
+	for (let i=0;i<width*2;i++) tryToCreateRoom();
 	return board;
 }
 function designRoom(origin){
 	var roomWidth=Math.floor(Math.random()*4+(maxRoomWidth-3));
 	var roomHeight=Math.floor(Math.random()*4+(maxRoomHeight-3));
-	var direction;
 	var topLeftCorner;
 	if (board[origin-1]=="open") {
 		topLeftCorner=origin+1-Math.floor(Math.random()*roomHeight)*width;
@@ -84,8 +83,8 @@ function createRoom(corner,roomWidth,roomHeight){
 			if (board[corner+j+(i*width)]!="wall") return false;
 		}
 	}
-	for (var i=0;i<roomHeight;i++){
-		for (var j=0;j<roomWidth;j++){
+	for (let i=0;i<roomHeight;i++){
+		for (let j=0;j<roomWidth;j++){
 			board[corner+j+(i*width)]="open";
 		}
 	}
@@ -151,7 +150,6 @@ function firstPass(cell){
 			case 7:
 			case 8:
 				return "wall";
-				break;
 			default:
 				return "dead";
 		}
@@ -186,7 +184,6 @@ function secondPass(cell){
 			case 7:
 			case 8:
 				return "wall";
-				break;
 			default:
 				return "dead";
 		}
@@ -198,8 +195,8 @@ function thirdPass(cell){
 			  (cell+1)%width==0){
 			return "wall";
 		}
-	else if ((board[cell-1]=="dead" && board[cell+1]=="dead" && board[cell]=="wall")
-		|| (board[cell-width]=="dead" && board[cell+width]=="dead" && board[cell]=="wall")) {
+	else if ((board[cell-1]=="dead" && board[cell+1]=="dead" && board[cell]=="wall") ||
+		(board[cell-width]=="dead" && board[cell+width]=="dead" && board[cell]=="wall")) {
 		return "dead";
 	}
 	else return board[cell];
@@ -232,16 +229,16 @@ function floodFill(cell){
 function generateBoardThree(){
 	if(generations<1) randomizeBoard();
 	if(generations<3){
-		for (var i=0;i<(height*width);i++) newBoard.push(firstPass(i));
+		for (let i=0;i<(height*width);i++) newBoard.push(firstPass(i));
 	}
 	else{
-		for (var i=0;i<(height*width);i++) newBoard.push(secondPass(i));
+		for (let i=0;i<(height*width);i++) newBoard.push(secondPass(i));
 	}
 	generations++;
 	board=newBoard;
 	newBoard=[];
 	if(generations>7){
-		for (var i=0;i<(height*width);i++) newBoard.push(thirdPass(i));
+		for (let i=0;i<(height*width);i++) newBoard.push(thirdPass(i));
 		board=newBoard;
 		newBoard=[];
 		if (checkBoard()){
@@ -267,18 +264,17 @@ function initializeLevel(level,target){
 
 // load up the board
 function createStuff(level){
-	var stuffCount=0;
 	var placeStuff=0;
-	var newThing={};
+	var randomType=0;
 	for (var i=0;i<stuffDensity;i++){
 		placeStuff=Math.floor(Math.random()*width*height);
 		if (level[placeStuff]=="open" && gameData.objectMap[placeStuff]=="") {
-			gameData.objectMap[placeStuff]={}
+			gameData.objectMap[placeStuff]={};
 			switch(placeStuff%12){
 				case 0:
 					switch(placeStuff%8){
 						case 0:
-							var randomType=Math.floor(Math.random()*5);
+							randomType=Math.floor(Math.random()*5);
 							gameData.objectMap[placeStuff]={
 								type:rareTreasureTypes[randomType].type,
 								slot:rareTreasureTypes[randomType].slot,
@@ -288,16 +284,16 @@ function createStuff(level){
 								damageMax:0,
 								defense:0
 							};
-							if (rareTreasureTypes[randomType].slot="weapon"){
+							if (rareTreasureTypes[randomType].slot=="weapon"){
 								gameData.objectMap[placeStuff].damageMin=rareTreasureTypes[randomType].damageMin;
 								gameData.objectMap[placeStuff].damageMax=rareTreasureTypes[randomType].damageMax;
 							}
-							if (rareTreasureTypes[randomType].slot="armor"){
+							if (rareTreasureTypes[randomType].slot=="armor"){
 								gameData.objectMap[placeStuff].defense=rareTreasureTypes[randomType].defense;
 							}
 							break;
 						default:
-							var randomType=Math.floor(Math.random()*10);
+							randomType=Math.floor(Math.random()*10);
 							gameData.objectMap[placeStuff]={
 								type:commonTreasureTypes[randomType].type,
 								slot:commonTreasureTypes[randomType].slot,
@@ -307,11 +303,11 @@ function createStuff(level){
 								damageMax:0,
 								defense:0
 							};
-							if (commonTreasureTypes[randomType].slot="weapon"){
+							if (commonTreasureTypes[randomType].slot=="weapon"){
 								gameData.objectMap[placeStuff].damageMin=commonTreasureTypes[randomType].damageMin;
 								gameData.objectMap[placeStuff].damageMax=commonTreasureTypes[randomType].damageMax;
 							}
-							if (commonTreasureTypes[randomType].slot="armor"){
+							if (commonTreasureTypes[randomType].slot=="armor"){
 								gameData.objectMap[placeStuff].defense=commonTreasureTypes[randomType].defense;
 							}
 					}
@@ -323,7 +319,7 @@ function createStuff(level){
 					gameData.objectMap[placeStuff]={type:"food"};
 					break;
 				case 5:
-					var randomType=Math.floor(Math.random()*3);
+					randomType=Math.floor(Math.random()*3);
 					gameData.objectMap[placeStuff]={
 						type:rareMonsterTypes[randomType].type,
 						name:rareMonsterTypes[randomType].name,
@@ -335,7 +331,7 @@ function createStuff(level){
 					gameData.monsters.push(gameData.objectMap[placeStuff]);
 					break;
 				default:
-					var randomType=Math.floor(Math.random()*5);
+					randomType=Math.floor(Math.random()*5);
 					gameData.objectMap[placeStuff]={
 						type:commonMonsterTypes[randomType].type,
 						name:commonMonsterTypes[randomType].name,
@@ -375,8 +371,7 @@ var Universe=React.createClass({
 		if (e.which==71) this.pickUpTreasure();
 		if (moveDirections[e.which]!==undefined) {
 			if(this.state.data.HP<=0) {
-				alert("You died. Reload the page to play again.");
-				return false;
+				return;
 			}
 			var updateData=this.state.data;
 			var targetCell=this.state.data.playerLocation+moveDirections[e.which];
@@ -393,8 +388,8 @@ var Universe=React.createClass({
 							updateData=this.hitMonster(targetCell);
 							break;
 						case "treasure":
-							updateData.message="You found a treasure chest! It contains "
-								+ this.state.data.objectMap[targetCell].name2 + "! Press G if you want to pick it up.";
+							updateData.message="You found a treasure chest! It contains " +
+								this.state.data.objectMap[targetCell].name2 + "! Press G if you want to pick it up.";
 							updateData.foundTreasure=targetCell;
 							break;
 						case "player":
@@ -412,7 +407,7 @@ var Universe=React.createClass({
 					this.setState({data:updateData});
 					if (updateData.HP <= 0) {
 						alert("You died. Reload the page to play again.");
-						$.post("logger.php",{log:" died to a ".updateData.killedBy." after earning "+updateData.experience+" experience.\nPlayer was wielding ".updateData.weapon.name2." and wearing ".updateData.armor.name2."."}).done(function(res){
+						$.post("logger.php",{log:" died to a "+updateData.killedBy+" after earning "+updateData.experience+" experience.\nPlayer was wielding "+updateData.weapon.name2+" and wearing "+updateData.armor.name2+"."}).done(function(res){
 						console.log("PHP response: "+res);
 						});
 					}
@@ -424,8 +419,6 @@ var Universe=React.createClass({
 	},
 	hitMonster(cell) {
 		var updateData=this.state.data;
-		var victory=false;
-		this.state.data.weapon.damageMax;
 		var damageToMonster=this.state.data.weapon.damageMin+
 				Math.floor(this.state.data.experience/9)+Math.floor(Math.random()*(this.state.data.weapon.damageMax-this.state.data.weapon.damageMin+1));
 		console.log("Previous monster HP: "+ updateData.objectMap[cell].HP);
@@ -457,17 +450,17 @@ var Universe=React.createClass({
 			}
 			else if (Math.floor(Math.random()*2*data.monsters[i].move)>0){
 				var clearMoves=[];
-				if (data.objectMap[data.monsters[i].loc-1]==""
-						&& this.state.board[data.monsters[i].loc-1]=="open")
+				if (data.objectMap[data.monsters[i].loc-1]=="" &&
+						this.state.board[data.monsters[i].loc-1]=="open")
 						clearMoves.push(data.monsters[i].loc-1);
-				if (data.objectMap[data.monsters[i].loc+1]==""
-						&& this.state.board[data.monsters[i].loc+1]=="open")
+				if (data.objectMap[data.monsters[i].loc+1]=="" &&
+						this.state.board[data.monsters[i].loc+1]=="open")
 						clearMoves.push(data.monsters[i].loc+1);
-				if (data.objectMap[data.monsters[i].loc-width]==""
-						&& this.state.board[data.monsters[i].loc-width]=="open")
+				if (data.objectMap[data.monsters[i].loc-width]=="" &&
+						this.state.board[data.monsters[i].loc-width]=="open")
 						clearMoves.push(data.monsters[i].loc-width);
-				if (data.objectMap[data.monsters[i].loc+width]==""
-						&& this.state.board[data.monsters[i].loc+width]=="open")
+				if (data.objectMap[data.monsters[i].loc+width]=="" &&
+						this.state.board[data.monsters[i].loc+width]=="open")
 						clearMoves.push(data.monsters[i].loc+width);
 				if (clearMoves.length==0) continue;
 				else {
@@ -480,8 +473,7 @@ var Universe=React.createClass({
 		return data;
 	},
 	monsterHitYou(index,data){
-		var damageToPlayer=Math.max(0, data.monsters[index].damage											
-																+Math.ceil(Math.random()*3-2));
+		var damageToPlayer=Math.max(0, data.monsters[index].damage+Math.ceil(Math.random()*3-2));
 		var hitRoll=Math.random()*20;
 		console.log("Hit roll: "+hitRoll+", Armor class: "+data.armor.defense);
 		if (hitRoll<data.armor.defense){
@@ -495,15 +487,15 @@ var Universe=React.createClass({
 				damageToPlayer + " damage!";
 			if(data.HP<=0) {
 				data.message=data.message+" You have been slain!";
-				alert("You died. Reload the page to play again.");
 				data.killedBy=data.monsters[index].name;
 			}
 		}
 		return data;
 	},
 	pickUpTreasure(){
+		var updateData={};
 		if (!this.state.data.foundTreasure) return false;
-		else var updateData=this.state.data;
+		else updateData=this.state.data;
 		var slot=updateData.objectMap[updateData.foundTreasure].slot;
 		switch (slot){
 			case "armor":
@@ -537,14 +529,16 @@ var Universe=React.createClass({
 	},
 	render:function(){
 		var cells=[];
-		for (var i=0;i<(height*width);i++){
+		for (let i=0;i<(height*width);i++){
 			if (i%width==0) cells.push(<br />);
-			if (this.state.data.objectMap[i]!="")
-			cells.push(<Cell type={this.state.data.objectMap[i].type} index={i} key={i} clicked={this.clickHandler.bind(null,i)}/>)
-			else
-			cells.push(<Cell type={this.state.board[i]} index={i} key={i} />)
+			if (this.state.data.objectMap[i]!=""){
+				cells.push(<Cell type={this.state.data.objectMap[i].type} index={i} key={i} clicked={this.clickHandler.bind(null,i)}/>)
+			}
+			else {
+				cells.push(<Cell type={this.state.board[i]} index={i} key={i} />)
+			}
 		}
-	return (<div>{cells}<br /><Status status={this.state.data} /><br /></div>)
+		return (<div>{cells}<br /><Status status={this.state.data} /><br /></div>)
 	}
 });
 

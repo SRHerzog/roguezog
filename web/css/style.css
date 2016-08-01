@@ -81,11 +81,11 @@ input{
 .status {
   position: relative;
   margin: auto;
-  top: 20px;
+  top: 50px;
 }
 
 #instructions {
   position: relative;
   margin: auto;
-  top: 120px;
+  top: 100px;
 }
