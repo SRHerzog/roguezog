@@ -1,0 +1,75 @@
+$alive:#777;
+$dead:#222;
+$player:#68F;
+$monster:#C68;
+$bigmonster:#C13;
+$bossmonster:#301;
+$treasure:#EC4;
+$food:#6F8;
+$boundary:#DDD;
+
+.gameboard {
+	line-height:8px;
+	white-space: nowrap;
+}
+.cell {
+	display:inline-block;
+	width:10px;
+	height:10px;
+	border-style:solid;
+	border:{
+		width:1px;
+		color:#000;
+	}
+	&.dead {
+	background-color:$alive;
+}
+&.monster {
+	background-color:$monster;
+}
+	&.bigmonster {
+		background-color:$bigmonster;
+	}
+	&.bossmonster {
+		position:relative;
+		z-index:2;
+		background-color:$bossmonster;
+		box-shadow: 0px 0px 3px 3px #E00;
+	}
+&.treasure {
+	background-color:$treasure;
+}
+&.food {
+	background-color:$food;
+}
+&.wall {
+	background-color:$alive;
+}
+&.player {
+	position:relative;
+	z-index:2;
+	background-color:$player;
+	border-style:none;
+	box-shadow: 0px 0px 3px 3px #FFF;
+	z-index:3;
+}
+&.open {
+	background-color:$dead;
+}
+&.boundary {
+	background-color:$boundary;
+}
+}
+.player-blink {
+	position:absolute;
+}
+.status {
+	position:relative;
+	margin:auto;
+	top:20px;
+}
+#instructions {
+	position:relative;
+	margin:auto;
+	top:30px;
+}
