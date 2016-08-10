@@ -7,8 +7,31 @@ const stuffDensity = 280; //default to a little over 10% of height * width
 const experienceDamageCoefficient = 9; // number of experience points until you hit harder
 
 // Initial game data
-var gameData = { playerLocation: 1, weapon: { type: "armor", slot: "default", name: "Headbutt", name2: "headbutt", damageMin: 1, damageMax: 2 },
-	armor: { type: "armor", slot: "default", name: "pants", name2: "pants", defense: 1 }, otherItem: {}, experience: 0, HP: 20, killedBy: null, monsters: [], treasure: [], food: [], boss: [], objectMap: [], message: [], turnCount: 0, foundTreasure: false };
+var gameData = { playerLocation: 1,
+	weapon: { type: "armor",
+		slot: "default",
+		name: "Headbutt",
+		name2: "headbutt",
+		damageMin: 1,
+		damageMax: 2 },
+	armor: { type: "armor",
+		slot: "default",
+		name: "pants",
+		name2: "pants",
+		defense: 1 },
+	otherItem: {},
+	experience: 0,
+	HP: 20,
+	killedBy: null,
+	monsters: [],
+	treasure: [],
+	food: [],
+	boss: [],
+	objectMap: [],
+	darkness: [],
+	message: [],
+	turnCount: 0,
+	foundTreasure: false };
 const commonMonsterTypes = [{ type: "monster", name: "slime mold", HP: 1, damage: 0, value: 2, move: 0, loc: 0 }, { type: "monster", name: "gnome", HP: 5, damage: 2, value: 2, move: 1, loc: 0 }, { type: "monster", name: "dwarf", HP: 8, damage: 3, value: 3, move: 1, loc: 0 }, { type: "bigmonster", name: "orc", HP: 12, damage: 4, value: 5, move: 1, loc: 0 }, { type: "bigmonster", name: "troll", HP: 18, damage: 6, value: 7, move: 1, loc: 0 }];
 const rareMonsterTypes = [{ type: "bigmonster", name: "golem", HP: 30, damage: 2, value: 5, move: 0.5, loc: 0 }, { type: "monster", name: "leprechaun", HP: 10, damage: 1, value: 7, move: 2, loc: 0 }, { type: "monster", name: "floating eye", HP: 3, damage: 1, value: 0, move: 0, loc: 0 }];
 const commonTreasureTypes = [{ type: "treasure", slot: "weapon", name: "heavy rock", name2: "a heavy rock", damageMin: 2, damageMax: 3 }, { type: "treasure", slot: "weapon", name: "spear", name2: "a spear", damageMin: 2, damageMax: 4 }, { type: "treasure", slot: "weapon", name: "longsword", name2: "a longsword", damageMin: 4, damageMax: 5 }, { type: "treasure", slot: "weapon", name: "club", name2: "a club", damageMin: 2, damageMax: 3 }, { type: "treasure", slot: "weapon", name: "spiked mace", name2: "a spiked mace", damageMin: 3, damageMax: 4 }, { type: "treasure", slot: "armor", name: "leather armor", name2: "a suit of leather armor", defense: 2 }, { type: "treasure", slot: "armor", name: "brigandine armor", name2: "a suit of brigandine armor", defense: 4 }, { type: "treasure", slot: "armor", name: "mail armor", name2: "a suit of mail armor", defense: 3 }, { type: "treasure", slot: "armor", name: "breastplate", name2: "a breastplate", defense: 3 }, { type: "treasure", slot: "other", name: "an amulet of reflection that doesn't do anything", name2: "an amulet of reflection that doesn't do anything" }];
@@ -26,6 +49,7 @@ function generateDungeon() {
 	for (let i = 0; i < height * width; i++) {
 		if (i < width + 1 || i > width * (height - 1) - 1 || i % width == 0 || (i + 1) % width == 0) board.push("boundary");else board.push("wall");
 		gameData.objectMap.push("");
+		gameData.darkness.push(true);
 	}
 	createRoom(Math.floor(width * height / 2.67), 5, 5);
 	for (let i = 0; i < width * 2; i++) tryToCreateRoom();
@@ -317,14 +341,14 @@ var Universe = React.createClass({
 	},
 	componentDidMount() {
 		window.addEventListener('keydown', this.handleKeypress);
+		this.setState({ data: this.updateLighting(this.state.data) });
 	},
 	handleKeypress(e) {
 		if (e.target.nodeName == "INPUT") return;
 		if (e.which == 71) this.pickUpTreasure();
 		if (moveDirections[e.which] !== undefined) {
 			if (this.state.data.HP <= 0) {
-				alert("You died. Reload the page to play again.");
-				return false;
+				return;
 			}
 			var updateData = this.state.data;
 			var targetCell = this.state.data.playerLocation + moveDirections[e.which];
@@ -353,6 +377,7 @@ var Universe = React.createClass({
 							updateData.objectMap[targetCell] = { type: "player" };
 							updateData.objectMap[this.state.data.playerLocation] = "";
 							updateData.playerLocation += moveDirections[e.which];
+							updateData = this.updateLighting(updateData);
 							updateData.foundTreasure = 0;
 					}
 					updateData = this.monstersMove(updateData);
@@ -416,7 +441,6 @@ var Universe = React.createClass({
 			data.message = data.message + "\nThe " + data.monsters[index].name + " strikes you for " + damageToPlayer + " damage!";
 			if (data.HP <= 0) {
 				data.message = data.message + " You have been slain!";
-				alert("You died. Reload the page to play again.");
 				data.killedBy = data.monsters[index].name;
 			}
 		}
@@ -450,6 +474,19 @@ var Universe = React.createClass({
 		}
 		this.setState({ data: updateData });
 	},
+	updateLighting(data) {
+		function getX(cell) {
+			return cell % width;
+		}
+		function getY(cell) {
+			return Math.floor(cell / width);
+		}
+		var p = data.playerLocation;
+		for (let i = p - 3 - width * 3; i <= p + 3 + width * 3; i++) {
+			if (getX(i) - getX(p) <= 3 && getX(i) - getX(p) >= -3 && getY(i) - getY(p) <= 3 && getY(i) - getY(p) >= -3) data.darkness[i] = false;
+		}
+		return data;
+	},
 	clickHandler(index) {
 		console.log(this.state.data.objectMap[index]);
 	},
@@ -457,7 +494,9 @@ var Universe = React.createClass({
 		var cells = [];
 		for (let i = 0; i < height * width; i++) {
 			if (i % width == 0) cells.push(React.createElement("br", null));
-			if (this.state.data.objectMap[i] != "") {
+			if (this.state.data.darkness[i]) {
+				cells.push(React.createElement(Cell, { type: "dark", index: i, key: i }));
+			} else if (this.state.data.objectMap[i] != "") {
 				cells.push(React.createElement(Cell, { type: this.state.data.objectMap[i].type, index: i, key: i, clicked: this.clickHandler.bind(null, i) }));
 			} else {
 				cells.push(React.createElement(Cell, { type: this.state.board[i], index: i, key: i }));
@@ -486,7 +525,7 @@ function Status(props) {
 	return React.createElement(
 		"div",
 		{ className: "status" },
-		"Current HP: " + props.status.HP + "/" + (20 + Math.floor(parseInt(props.status.experience) / 5)) + " Experience: " + props.status.experience + " Equipped weapon: " + props.status.weapon.name,
+		"Current HP: " + props.status.HP + "/" + (20 + Math.floor(parseInt(props.status.experience) / 5)) + " Level: " + Math.floor(parseInt(props.status.experience) / 5) + " Experience: " + props.status.experience + " Equipped weapon: " + props.status.weapon.name,
 		React.createElement(
 			"p",
 			null,

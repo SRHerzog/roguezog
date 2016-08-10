@@ -68,10 +68,13 @@ input{
   z-index: 3;
 }
 .cell.open {
-  background-color: #222;
+  background-color: #333;
 }
 .cell.boundary {
   background-color: #DDD;
+}
+.cell.dark {
+  background-color: #000;
 }
 
 .player-blink {
@@ -81,11 +84,12 @@ input{
 .status {
   position: relative;
   margin: auto;
-  top: 50px;
+  top: 10px;
+  line-height:20px;
 }
 
 #instructions {
   position: relative;
   margin: auto;
-  top: 100px;
+  top: 130px;
 }
